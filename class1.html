@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+  	<title>Intro to Docker ~ Girl Develop It</title>
+
+    <meta name="description" content="This course was adapted from Docker's Intro to Docker material, which can be found at http://view.dckr.info/DockerIntro.pdf.
+
+		The course is meant to be taught in four to six hours of classroom time. Each of the slides and practice files are customizable according to the needs of a given class or audience.">
+		<meta name="author" content="Girl Develop It">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/simple.css" id="theme">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- For syntax highlighting -->
+    <!-- light editor--><link rel="stylesheet" href="lib/css/light.css">
+    <!-- dark editor<link rel="stylesheet" href="lib/css/dark.css"> -->
+    <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+
+    <link rel="stylesheet" href="plugin/accessibility-helper/css/accessibility-helper.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+      if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+      }
+    </script>
+
+    <!-- If use the PDF print sheet so students can print slides-->
+
+    <link rel="stylesheet" href="css/print/pdf.css" type="text/css" media="print">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+      <!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+    <section>
+      <img src="img/circle-gdi-logo.png" alt="GDI Logo" class="noborder">
+      <h1>Intro to Docker</h1>
+      <h2>Class 1</h2>
+    </section>
+
+    <!-- Welcome-->
+    <section class="hide-pdf">
+      <h3>Welcome!</h3>
+      <div class = "left-align">
+      <p>Girl Develop It is here to provide affordable and accessible programs to learn software through mentorship and hands-on instruction.</p>
+      <p class ="green">Some "rules"</p>
+      <ul>
+        <li>We are here for you!</li>
+        <li>Every question is important</li>
+        <li>Help each other</li>
+        <li>Have fun</li>
+      </ul>
+      </div>
+    </section>
+
+    <section>
+      <h3>Welcome!</h3>
+      <div class = "left-align">
+      <p>Tell us about yourself.</p>
+      <ul>
+        <li>Who are you?</li>
+        <li>What do you hope to get out of the class?</li>
+        <li>Who was your favorite character as a child?</li>
+      </ul>
+      </div>
+    </section>
+
+
+    <!-- Agenda -->
+    <section>
+      <h3>What we will cover today</h3>
+      <ul>
+        <li class ="fragment">What is containerization, and why should you care?</li>
+        <li class ="fragment">Container Basics</li>
+        <li class ="fragment">Background Containers</li>
+        <li class="fragment">Docker Images</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>What's all the buzz about containers'?</h3>
+      <p>The software industry has changed!</p>
+      <div class="fragment">
+        <h4>Before we had:</h4>
+        <ul>
+            <li>monolithic applications</li>
+            <li>long development cycles</li>
+            <li>single environment</li>
+            <li>slowly scaling up</li>
+        </ul>
+      </div>
+      <div class="fragment">
+        <h4>Now we have:</h4>
+        <ul>
+          <li>decoupled services</li>
+          <li>fast, iterative improvements</li>
+          <li>multiple environments</li>
+          <li>quickly scaling out</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h3>Deployment becomes very complex.</h3>
+      <h4>Many different stacks:</h4>
+      <ul>
+        <li>languages</li>
+        <li>frameworks</li>
+        <li>databases</li>
+      </ul>
+      <h4>Many different targets:</h4>
+      <ul>
+        <li>individual development environments</li>
+        <li>pre-production, QA, staging</li>
+        <li>production: on prem, cloud, hybrid</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>What Docker gives you</h3>
+      <ul>
+        <li>Manage dependencies with ease</li>
+        <li>Onboard developers and contributors rapidly</li>
+        <li>Implement reliable CI easily</li>
+        <li>Use container images as build artifacts</li>
+        <li>Decouple "plumbing" from application logic</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Using Docker, The Big Picture</h3>
+      <img src="img/architecture.svg" alt="GDI Logo" class="noborder">
+    </section>
+
+    <section>
+      <h4>Docker is a client-server application.</h4>
+      <ul>
+        <li>The Docker Engine (or "daemon")</li>
+          <ul>
+            <li>Receives and processes incoming Docker API requests.</li>
+          </ul>
+        <li>The Docker client</li>
+          <ul>
+            <li>Talks to the Docker daemon via the Docker API.</li>
+            <li>We'll use mostly the CLI embedded within the docker binary.</li>
+          </ul>
+        <li>Docker Hub Registry</li>
+          <ul>
+            <li>Collection of public images.</li>
+            <li>The Docker daemon talks to it via the registry API.</li>
+          </ul>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Docker Terminology</h3>
+      <h4>Images</h4>
+        <p>The file system and configuration of our application which
+          are used to create containers.</p>
+         </section>
+
+    <section>
+      <h4>Containers</h4>
+      <p>
+        Running instances of Docker images — containers run the actual
+        applications. A container includes an application and all of its
+        dependencies. It shares the kernel with other containers, and runs as
+        an isolated process in user space on the host OS.
+      </p>
+    </section>
+
+    <section>
+      <h4>Docker daemon</h4>
+      <p>
+        The background service running on the host that manages building,
+        running and distributing Docker containers.
+      </p>
+    </section>
+
+    <section>
+      <h4>Docker client</h4>
+      <p>
+        The command line tool that allows the user to interact with the Docker daemon.
+      </p>
+    </section>
+
+    <section>
+      <h4>Docker Hub</h4>
+      <p>
+        A registry of Docker images. You can think of the registry as a
+        directory of all available Docker images. You'll be using this later in
+        this tutorial.
+      </p>
+    </section>
+
+    <section>
+      <h3>Our First Containers</h3>
+      <p>In your Docker environment, just run the following command:</p>
+      <pre><code class = "python">$ docker run busybox echo hello world
+hello world  </code></pre>
+    </section>
+
+    <section>
+      <h3>That's it!</h3>
+      <p>That was our first container.</p>
+    </section>
+
+    <section>
+      <h3>A more useful container</h3>
+      <p>Let's run a more exciting container:</p>
+      <pre><code class = "python">$ docker run -it ubuntu
+  root@04c0bb0a6c07:/#</code></pre>
+      <ul>
+        <li>This is a brand new container.</li<
+        <li>It runs a bare-bones, no-frills ubuntu system.</li>
+        <li>-it is shorthand for -i -t.</li>
+        <li>-i tells Docker to connect us to the container's stdin.</li>
+        <li>-t tells Docker that we want a pseudo-terminal.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Do something in our container</h3>
+      <pre><code class = "python">root@04c0bb0a6c07:/# figlet hello
+bash: figlet: command not found</code></pre>
+      <p>Alright, we need to install it.</p>
+    </section>
+
+    <section>
+      <h3>An observation</h3>
+      <p>Let's check how many packages are installed here.</p>
+      <pre><code class = "python">root@04c0bb0a6c07:/# dpkg -l | wc -l
+189</code></pre>
+      <ul>
+        <li>dpkg -l lists the packages installed in our container</li>
+        <li>wc -l counts them</li>
+        <li>If you have a Debian or Ubuntu machine, you can run the same command
+          and compare the results.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Install a package in our container</h3>
+      <p>We want figlet, so let's install it:</p>
+      <pre><code class = "python">root@04c0bb0a6c07:/# apt-get update
+...
+Fetched 1514 kB in 14s (103 kB/s)
+Reading package lists... Done
+root@04c0bb0a6c07:/# apt-get install figlet
+Reading package lists... Done
+...</code></pre>
+      <p>One minute later, figlet is installed!</p>
+      <pre><code class = "python"># figlet hello _ __
+| |__   ___| | | ___
+| '_ \ / _ \ | |/ _ \
+| | | |  __/ | | (_) |
+|_| |_|\___|_|_|\___/</code></pre>
+    </section>
+
+    <section>
+      <h3>Exiting our container</h3>
+      <p>Just exit the shell, like you would usually do.<p>
+      <p>(E.g. with ^D or exit)</p>
+      <pre><code class = "python">root@04c0bb0a6c07:/# exit</code></pre>
+      <ul>
+        <li>Our container is now in a stopped state.</li>
+        <li>It still exists on disk, but all compute resources have been freed up.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Starting another container</h3>
+      <p>What if we start a new container, and try to run figlet again?</p>
+      <pre><code class = "python">$ docker run -it ubuntu
+root@b13c164401fb:/# figlet
+bash: figlet: command not found</code></pre>
+      <ul>
+        <li>We started a brand new container.</li>
+        <li>The basic Ubuntu image was used, and figlet is not here.</li>
+        <li>We will learn later how to bake a custom image with figlet.</li>
+      </ul>
+    </section>
+
+<!-- Background Containers -->
+    <section>
+      <h3>Background Containers</h3>
+      <h4>A non-interactive container</h4>
+      <p>We will run a small custom container.</p>
+      <p>This container just displays the time every second.</p>
+      <pre><code class = "python">$ docker run jpetazzo/clock
+Fri Feb 20 00:28:53 UTC 2015
+Fri Feb 20 00:28:54 UTC 2015
+Fri Feb 20 00:28:55 UTC 2015
+...</code></pre>
+      <ul>
+        <li>This container will run forever.</li>
+        <li>To stop it, press ^C.</li>
+        <li>Docker has automatically downloaded the image jpetazzo/clock.</li>
+        <li>This image is a user image, created by jpetazzo.</li>
+        <li>We will hear more about user images (and other types of images) later.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Run a container in the background</h3>
+      <p>Containers can be started in the background, with the -d flag (daemon mode):</p>
+      <pre><code class = "python">$ docker run -d jpetazzo/clock
+47d677dcfba4277c6cc68fcaa51f932b544cab1a187c853b7d0caf4e8debe5ad</code></pre>
+      <ul>
+        <li>We don't see the output of the container.</li>
+        <li>But don't worry: Docker collects that output and logs it!</li>
+        <li>Docker gives us the ID of the container.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>List running containers</h3>
+      <p>How can we check that our container is still running?</p>
+      <p>With docker ps, just like the UNIX ps command, lists running processes.</p>
+      <pre><code class = "python">$ docker ps
+CONTAINER ID  IMAGE           ...  CREATED        STATUS        ...
+47d677dcfba4  jpetazzo/clock  ...  2 minutes ago  Up 2 minutes  ...</code></pre>
+      <p>Docker tells us:</p>
+      <ul>
+        <li>The (truncated) ID of our container.</li>
+        <li>The image used to start the container.</li>
+        <li>That our container has been running (Up) for a couple of minutes.</li>
+        <li>Other information (COMMAND, PORTS, NAMES) that we will explain later.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Starting more containers</h3>
+      <p>Let's start two more containers:</p>
+      <pre><code class = "python">$ docker run -d jpetazzo/clock
+57ad9bdfc06bb4407c47220cf59ce21585dce9a1298d7a67488359aeaea8ae2a
+$ docker run -d jpetazzo/clock
+068cc994ffd0190bbe025ba74e4c0771a5d8f14734af772ddee8dc1aaf20567d</code></pre>
+      <p>Check that docker ps correctly reports all 3 containers.</p>
+    </section>
+
+    <section>
+      <h3>Two useful flags for docker ps</h3>
+      <p>To see only the last container that was started:</p>
+      <pre><code class = "python">$ docker ps -l
+CONTAINER ID  IMAGE           ...  CREATED        STATUS        ...
+068cc994ffd0  jpetazzo/clock  ...  2 minutes ago  Up 2 minutes  ...</code></pre>
+      <p>To see only the ID of containers:</p>
+      <pre><code class = "python">$ docker ps -q
+068cc994ffd0
+57ad9bdfc06b
+47d677dcfba4</code></pre>
+      <p>Combine those flags to see only the ID of the last container started!</p>
+      <pre><code class = "python">$ docker ps -lq
+068cc994ffd0</code></pre>
+    </section>
+
+    <section>
+      <h3>View the logs of a container</h3>
+      <p>We said that Docker was logging the container output.</p>
+      <p>Let's see that now.</p>
+      <pre><code class = "python">$ docker logs 068
+Fri Feb 20 00:39:52 UTC 2015
+Fri Feb 20 00:39:53 UTC 2015
+...</code></pre>
+      <ul>
+        <li>We specified a prefix of the full container ID.</li>
+        <li>You can, of course, specify the full ID.</li>
+        <li>The logs command will output the entire logs of the container.
+          (Sometimes, that will be too much. Let's see how to address that.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>View only the tail of the logs</h3>
+      <p>To avoid being spammed with eleventy pages of output, we can use the --tail option:</p>
+      <pre><code class = "python">$ docker logs --tail 3 068
+Fri Feb 20 00:55:35 UTC 2015
+Fri Feb 20 00:55:36 UTC 2015
+Fri Feb 20 00:55:37 UTC 2015</code></pre>
+      <p>The parameter is the number of lines that we want to see.</p>
+    </section>
+
+    <section>
+      <h3>Follow the logs in real time</h3>
+      <p>Just like with the standard UNIX command tail -f, we can follow the
+        logs of our container:</p>
+        <pre><code class = "python">$ docker logs --tail 1 --follow 068
+Fri Feb 20 00:57:12 UTC 2015
+Fri Feb 20 00:57:13 UTC 2015
+^C</code></pre>
+        <ul>
+          <li>This will display the last line in the log file.</li>
+          <li>Then, it will continue to display the logs in real time.</li>
+          <li>Use ^C to exit.</li>
+        </ul>
+    </section>
+
+    <section>
+      <h3>Stop our container</h3>
+      <p>There are two ways we can terminate our detached container.</p><br>
+      <ul>
+        <li>Killing it using the docker kill command.</li>
+        <li>Stopping it using the docker stop command.</li>
+      </ul><br><br>
+      <p>The first one stops the container immediately, by using the KILL signal.</p>
+      <p>The second one is more graceful. It sends a TERM signal, and after 10
+        seconds, if the container has not stopped, it sends KILL.</p>
+      <p>Reminder: the KILL signal cannot be intercepted, and will forcibly
+        terminate the container.</p>
+    </section>
+
+    <section>
+      <h3>Stopping our containers</h3>
+      <p>Let's stop one of those containers:</p>
+      <pre><code class = "python">$ docker stop 47d6
+47d6</code></pre>
+      <p>This will take 10 seconds:</p>
+      <ul>
+        <li>Docker sends the TERM signal;</li>
+        <li>the container doesn't react to this signal (it's a simple Shell
+          script with no special signal handling);</li>
+        <li>10 seconds later, since the container is still running, Docker sends
+          the KILL signal;</li>
+        <li>this terminates the container.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Killing the remainder containers</h3>
+      <p>Let's be less patient with the two other containers:</p>
+      <pre><code class = "python">$ docker kill 068 57ad
+068
+57ad</code></pre>
+      <p>The stop and kill commands can take multiple container IDs.</p>
+      <p>Those containers will be terminated immediately (without the 10 seconds delay).</p>
+      <p>Let's check that our containers don't show up anymore:</p>
+      <pre><code class = "python">$ docker ps</code></pre>
+    </section>
+
+    <section>
+      <h3>List stopped containers</h3>
+      <p>We can also see stopped containers, with the -a (--all) option.</p>
+      <pre><code class = "python">$ docker ps -a
+CONTAINER ID  IMAGE           ...  CREATED      STATUS
+068cc994ffd0  jpetazzo/clock  ...  21 min. ago  Exited (137) 3 min. ago
+57ad9bdfc06b  jpetazzo/clock  ...  21 min. ago  Exited (137) 3 min. ago
+47d677dcfba4  jpetazzo/clock  ...  23 min. ago  Exited (137) 3 min. ago
+5c1dfd4d81f1  jpetazzo/clock  ...  40 min. ago  Exited (0) 40 min. ago
+b13c164401fb  ubuntu          ...  55 min. ago  Exited (130) 53 min. ago</code></pre>
+    </section>
+
+    <section>
+      <h3>Restarting and Attaching to Containers</h3>
+      <h4>Background and foreground</h4>
+      <p>The distinction between foreground and background containers is arbitrary.</p>
+      <p>From Docker's point of view, all containers are the same.</p>
+      <p>All containers run the same way, whether there is a client attached to
+        them or not. It is always possible to detach from a container, and to
+        reattach to a container.</p>
+      <p>Analogy: attaching to a container is like plugging a keyboard and
+        screen to a physical server.</p>
+    </section>
+
+    <section>
+      <h3>Detaching from a container</h3>
+      <ul>
+        <li>If you have started an interactive container (with option -it), you can detach from it.</li>
+        <li>The "detach" sequence is ^P^Q.</li>
+        <li>Otherwise you can detach by killing the Docker client.
+          (But not by hitting ^C, as this would deliver SIGINT to the container.)</li>
+      </ul>
+      <p>What does -it stand for?</p>
+      <ul>
+        <li>-t means "allocate a terminal."</li>
+        <li>-i means "connect stdin to the terminal."</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Specifying a custom detach sequence</h3>
+      <ul>
+        <li>You don't like ^P^Q? No problem!</li>
+        <li>You can change the sequence with docker run --detach-keys.</li>
+        <li>This can also be passed as a global option to the engine.</li>
+      </ul>
+      <p>Start a container with a custom detach command:</p>
+      <pre><code class = "python">$ docker run -ti --detach-keys ctrl-x,x jpetazzo/clock</code></pre>
+      <p>Detach by hitting ^X x. (This is ctrl-x then x, not ctrl-x twice!)</p>
+      <p>Check that our container is still running:</p>
+      <pre><code class = "python">$ docker ps -l</code></pre>
+    </section>
+
+    <section>
+      <h3>Attaching to a container</h3>
+      <p>You can attach to a container:</p>
+      <pre><code class = "python">$ docker attach &lt;containerID&gt;</code></pre>
+      <ul>
+        <li>The container must be running.</li>
+        <li>There can be multiple clients attached to the same container.</li>
+        <li>If you don't specify --detach-keys when attaching, it defaults back to ^P^Q.</li>
+      </ul>
+      <p>Try it on our previous container:</p>
+      <pre><code class = "python">$ docker attach $(docker ps -lq)</code></pre>
+      <p>Check that ^X x doesn't work, but ^P ^Q does.</p>
+    </section>
+
+    <section>
+      <h3>Detaching from non-interactive containers</h3>
+      <p>Warning: if the container was started without -it...</p><br>
+      <ul>
+        <li>You won't be able to detach with ^P^Q.</li>
+        <li>If you hit ^C, the signal will be proxied to the container.</li>
+      </ul><br><br>
+      <p>Remember: you can always detach by killing the Docker client</p>
+    </section>
+
+    <section>
+      <h3>Checking container output</h3>
+      <p>Use docker attach if you intend to send input to the container.</p>
+      <p>If you just want to see the output of a container, use docker logs.</p>
+      <pre><code class = "python">$ docker logs --tail 1 --follow &lt;containerID&gt;</code></pre>
+    </section>
+
+    <section>
+      <h3>Restarting a container</h3>
+      <p>When a container has exited, it is in stopped state.</p>
+      <p>It can then be restarted with the start command.</p>
+      <pre><code class = "python">$ docker start &lt;yourContainerID&gt;</code></pre>
+      <p>The container will be restarted using the same options you launched it with. </p>
+      <p>You can re-attach to it if you want to interact with it:</p>
+      <pre><code class = "python">$ docker attach &lt;yourContainerID&gt;</code></pre>
+      <p>Use docker ps -a to identify the container ID of a previous
+        jpetazzo/clock container, and try those commands.</p>
+    </section>
+
+    <section>
+      <h3>Attaching to a REPL</h3>
+      <ul>
+         <li>REPL = Read Eval Print Loop</li>
+         <li>Shells, interpreters, TUI ...</li>
+         <li>Symptom: you docker attach, and see nothing</li>
+         <li>The REPL doesn't know that you just attached, and doesn't print anything</li>
+         <li>Try hitting ^L or Enter</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>SIGWINCH</h3>
+      <ul>
+        <li>When you docker attach, the Docker Engine sends a couple of SIGWINCH
+          signals to the container.</li>
+        <li>SIGWINCH = WINdow CHange; indicates a change in window size.</li>
+        <li>This will cause some CLI and TUI programs to redraw the screen.</li>
+        <li>But not all of them.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Important PSA about Security</h3>
+      <ul>
+        <li>The docker user is root equivalent.</li>
+        <li>It provides root-level access to the host.</li>
+        <li>You should restrict access to it like you would protect root.</li>
+        <li>If you give somebody the ability to access the Docker API, you are
+          giving them full access on the machine.</li>
+        <li>Therefore, the Docker control socket is (by default) owned by the
+          docker group, to avoid unauthorized access on multi-user machines.</li>
+        <li>If your user is not in the docker group, you will need to prefix
+          every command with sudo; e.g. sudo docker version.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Develop It!</h3>
+      <p>Please complete the lab at <a href="http://training.play-with-docker.com/docker-containers/">the docker classroom</a>.</p>
+    </section>
+
+    <section>
+      <h3>Understanding Docker Images</h3>
+      <h4>What is an image?</h4>
+      <p>An image is a collection of files + some meta data. (Technically:
+        those files form the root filesystem of a container.)</p>
+      <p>Images are made of layers, conceptually stacked on top of each other.</p>
+      <p>Each layer can add, change, and remove files.</p>
+      <p>Images can share layers to optimize disk usage, transfer times, and memory use.</p>
+    </section>
+
+    <section>
+      <h3>Example:</h3>
+      <ul>
+        <li>CentOS</li>
+        <li>JRE</li>
+        <li>Tomcat</li>
+        <li>Dependencies</li>
+        <li>Application JAR</li>
+        <li>Configuration</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Differences between containers and images</h3>
+      <ul>
+        <li>An image is a read-only filesystem.</li>
+        <li>A container is an encapsulated set of processes running in a
+          read-write copy of that filesystem.</li>
+        <li>To optimize container boot time, copy-on-write is used instead of
+          regular copy.</li>
+        <li>docker run starts a container from a given image.</li>
+      <ul>
+      <p>Let's give a couple of metaphors to illustrate those concepts.</p>
+    </section>
+
+    <section>
+      <h3>Image as stencils</h3>
+      <p>Images are like templates or stencils that you can create containers from.</p>
+      <img src="img/stencil.jpg"/>
+    </section>
+
+    <section>
+      <h3>Object-Oriented Programming</h3>
+      <ul>
+        <li>Images are conceptually similar to <em>classes</em>.</li>
+        <li>Layers are conceptually similar to <em>inheritance</em>.</li>
+        <li>Containers are conceptually similar to <em>instances</em>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Wait a minute...</h3>
+      <p>If an image is read-only, how do we change it?</p>
+      <ul>
+        <li>We don't.</li>
+        <li>We create a new container from that image.</li>
+        <li>Then we make changes to that container.</li>
+        <li>When we are satisfied with those changes, we transform them into a new layer.</li>
+        <li>A new image is created by stacking the new layer on top of the old image.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>A chicken-and-egg problem</h3>
+      <ul>
+        <li>The only way to create an image is by "freezing" a container.</li>
+        <li>The only way to create a container is by instantiating an image.</li>
+        <li>Help!</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Creating the first images</h3>
+      <p>There is a special empty image called <em>scratch</em>.</p>
+      <p>It allows to build from scratch.</p>
+      <p>The docker import command loads a tarball into Docker.</li>
+      <ul>
+        <li>The imported tarball becomes a standalone image.</li>
+        <li>That new image has a single layer.</li>
+      </ul><br><br>
+      <p>Note: you will probably never have to do this yourself.</p>
+    </section>
+
+    <section>
+      <h3>Creating other images</h3>
+      <ul>
+        <li>docker commit</li>
+        <ul>
+          <li>Saves all the changes made to a container into a new layer.</li>
+          <li>Creates a new image (effectively a copy of the container).</li>
+        </ul>
+        <li>docker build</li>
+        <ul>
+          <li>Performs a repeatable build sequence.</li>
+          <li>This is the preferred method!</li>
+        </ul>
+      </ul><br><br>
+      <p>We will explain both methods in a moment.</p>
+    </section>
+
+    <section>
+      <h3>Images namespaces</h3>
+      <p>There are three namespaces:</p>
+      <ul>
+        <li>Official images, e.g. ubuntu, busybox ...</li>
+        <li>User (and organizations) images, e.g. jpetazzo/clock</li>
+        <li>Self-hosted images, e.g. registry.example.com:5000/my-private/image</li>
+      </ul><br><br>
+      <p>Let's explain each of them.</p>
+    </section>
+
+    <section>
+      <h3>Root namespace</h3>
+      <p>The root namespace is for official images. They are put there by Docker
+        Inc., but they are generally authored and maintained by third parties.</p>
+      <p>Those images include:</p>
+      <ul>
+        <li>Small, "swiss-army-knife" images like busybox.</li>
+        <li>Distro images to be used as bases for your builds, like ubuntu, fedora...</li>
+        <li>Ready-to-use components and services, like redis, postgresql...</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>User namespace</h3>
+      <p>The user namespace holds images for Docker Hub users and organizations.</p>
+      <p>For example:</p>
+      <pre><code class = "python">jpetazzo/clock</code></pre>
+      <p>The Docker Hub user is:</p>
+      <pre><code class = "python">jpetazzo</code></pre>
+      <p>The image name is:</p>
+      <pre><code class = "python">clock</code></pre>
+    </section>
+
+    <section>
+      <h3>Self-hosted namespace</h3>
+      <p>This namespace holds images which are not hosted on Docker Hub, but on third party registries.</p>
+      <p>They contain the hostname (or IP address), and optionally the port, of the registry server.</p>
+      <p>For example:</p>
+      <pre><code class = "python">localhost:5000/wordpres</code></pre>
+      <ul>
+        <li>localhost:5000 is the host and port of the registry</li>
+        <li>wordpress is the name of the image</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>How do you store and manage images?</h3>
+      <p>Images can be stored:</p>
+      <ul>
+        <li>On your Docker host.</li>
+        <li>In a Docker registry.</li>
+      </ul><br><br>
+      <p>You can use the Docker client to download (pull) or upload (push) images.</p>
+      <p>To be more accurate: you can use the Docker client to tell a Docker
+        server to push and pull images to and from a registry.</p>
+    </section>
+
+    <section>
+      <h3>Showing current images</h3>
+      <p>Let's look at what images are on our host now.</p>
+      <pre><code class = "python"> $ docker images
+REPOSITORY      TAG       IMAGE ID      CREATED       SIZE
+fedora          latest    ddd5c9c1d0f2  3 days ago    204.7 MB
+centos          latest    d0e7f81ca65c  3 days ago    196.6 MB
+ubuntu          latest    07c86167cdc4  4 days ago    188 MB
+redis           latest    4f5f397d4b7c  5 days ago    177.6 MB
+postgres        latest    afe2b5e1859b  5 days ago    264.5 MB
+alpine          latest    70c557e50ed6  5 days ago    4.798 MB
+debian          latest    f50f9524513f  6 days ago    125.1 MB
+busybox         latest    3240943c9ea3  3 days ago    1.114 MB
+training/namer  latest    902673acc741  2 weeks ago   289.3 MB
+jpetazzo/clock  latest    12068b93616f  9 months ago  2.433 MB</code></pre>
+    </section>
+
+    <section>
+      <h3>Searching for images</h3>
+      <p>We cannot list all images on a remote registry, but we can search for a specific keyword:</p>
+      <pre><code class = "python">$ docker search zookeeper
+NAME                  DESCRIPTION                 STARS  OFFICIAL AUTOMATED
+jplock/zookeeper      Builds a docker image ...   103              [OK]
+mesoscloud/zookeeper  ZooKeeper                   42               [OK]
+springxd/zookeeper    A Docker image that ca...   5                [OK]
+elevy/zookeeper       ZooKeeper configured t...   3                [OK]</code></pre>
+      <ul>
+        <li>"Stars" indicate the popularity of the image.</li>
+        <li>"Official" images are those in the root namespace.</li>
+        <li>"Automated" images are built automatically by the Docker Hub.
+          (This means that their build recipe is always available.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Downloading images</h3><br>
+      <p>There are two ways to download images.</p><br>
+      <ul>
+        <li>Explicitly, with docker pull.</li>
+        <li>Implicitly, when executing docker run and the image is not found locally.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Pulling an image</h3>
+      <pre><code class = "python">$ docker pull debian:jessie
+Pulling repository debian
+b164861940b8: Download complete
+b164861940b8: Pulling image (jessie) from debian
+d1881793a057: Download complete</code></pre>
+      <ul>
+        <li>As seen previously, images are made up of layers.</li>
+        <li>Docker has downloaded all the necessary layers.</li>
+        <li>In this example, :jessie indicates which exact version of Debian
+          we would like. It is a version tag.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Image and tags</h3>
+      <ul>
+        <li>Images can have tags.</li>
+        <li>Tags define image versions or variants.</li>
+        <li>docker pull ubuntu will refer to ubuntu:latest.</li>
+        <li>The :latest tag is generally updated often.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>When to (not) use tags</h3>
+      <p>Don't specify tags:</p><br>
+      <ul>
+        <li>When doing rapid testing and prototyping.</li>
+        <li>When experimenting.</li>
+        <li>When you want the latest version.</li>
+      </ul><br><br>
+      <p>Do specify tags:</p>
+      <ul>
+        <li>When recording a procedure into a script.</li>
+        <li>When going to production.</li>
+        <li>To ensure that the same version will be used everywhere.</li>
+        <li>To ensure repeatability later.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Develop It!</h3>
+      <p>Time permitting, you can complete <a href="https://github.com/docker/labs/tree/master/beginner">these exercises</a> in class or as homework.</p>
+    </section>
+
+    <section>
+      <h2>Questions?</h2>
+    </section>
+</div><!-- Close slides -->
+
+    <div>
+      <footer>
+        <div class="copyright">
+          HTML/CSS ~ Girl Develop It
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/3.0/80x15.png" /></a>
+        </div>
+      </footer>
+    </div>
+</div><!-- Closes Reveal -->
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/accessibility-helper/js/accessibility-helper.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
