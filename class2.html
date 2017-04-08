@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+  	<title>Intro to Docker ~ Girl Develop It</title>
+
+    <meta name="description" content="This course was adapted from Docker's Intro to Docker material, which can be found at http://view.dckr.info/DockerIntro.pdf.
+
+		The course is meant to be taught in four to six hours of classroom time. Each of the slides and practice files are customizable according to the needs of a given class or audience.">
+		<meta name="author" content="Girl Develop It">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/simple.css" id="theme">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- For syntax highlighting -->
+    <!-- light editor--><link rel="stylesheet" href="lib/css/light.css">
+    <!-- dark editor<link rel="stylesheet" href="lib/css/dark.css"> -->
+    <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+
+    <link rel="stylesheet" href="plugin/accessibility-helper/css/accessibility-helper.css">
+
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+      if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+      }
+    </script>
+
+    <!-- If use the PDF print sheet so students can print slides-->
+
+    <link rel="stylesheet" href="css/print/pdf.css" type="text/css" media="print">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+      <!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+    <section>
+      <img src="img/circle-gdi-logo.png" alt="GDI Logo" class="noborder">
+      <h1>Intro to Docker</h1>
+      <h2>Class 2</h2>
+    </section>
+
+    <!-- Welcome-->
+    <section class="hide-pdf">
+      <h3>Welcome!</h3>
+      <div class = "left-align">
+      <p>Girl Develop It is here to provide affordable and accessible programs to learn software through mentorship and hands-on instruction.</p>
+      <p class ="green">Some "rules"</p>
+      <ul>
+        <li>We are here for you!</li>
+        <li>Every question is important</li>
+        <li>Help each other</li>
+        <li>Have fun</li>
+      </ul>
+      </div>
+    </section>
+
+
+    <!-- Agenda -->
+    <section>
+      <h3>What we will cover today</h3>
+      <ul>
+        <li class ="fragment">Building docker images</li>
+        <li class ="fragment">Copying files during a build</li>
+        <li class ="fragment">Advanced Dockerfiles</li>
+        <li class="fragment">Naming &amp; inspecting containers</li>
+        <li class="fragment">Resources</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Building Docker Images</h3>
+      <h4>Building Images Interactively</h4>
+      <p>As we have seen, the images on the Docker Hub are sometimes very basic.</p>
+      <p>How do we want to construct our own images?</p>
+      <p>As an example, we will build an image that has figlet.</p>
+      <p>First, we will do it manually with docker commit.</p>
+      <p>Then later, we will use a Dockerfile and docker build.</p>
+    </section>
+
+    <section>
+      <h3>Building from a base</h3>
+      <p>Our base will be the ubuntu image.</p>
+    </section>
+
+    <section>
+      <h3>Create a new container and make some changes</h3>
+      <p>Start an Ubuntu container:</p>
+      <pre><code class = "python">$ docker run -it ubuntu
+root@&lt;yourContainerId&gt;:#/</code></pre>
+      <p>Run the command apt-get update to refresh the list of packages available to install.</p>
+      <p>Then run the command apt-get install figlet to install the program we are interested in.</p>
+      <pre><code class = "python">root@<yourContainerId>:#/ apt-get update && apt-get install figlet
+.... OUTPUT OF APT-GET COMMANDS ....</code></pre>
+    </section>
+
+    <section>
+      <h3>Inspect the changes</h3>
+      <p>Type exit at the container prompt to leave the interactive session.</p>
+      <p>Now let's run docker diff to see the difference between the base image and our container.</p>
+      <pre><code class = "python">$ docker diff &lt;yourContainerId&gt;
+C /root
+A /root/.bash_history
+C /tmp
+C /usr
+C /usr/bin
+A /usr/bin/figlet
+...</code></pre>
+    </section>
+
+    <section>
+      <h3>Docker tracks filesystem changes</h3>
+      <p>As we know:</p>
+      <ul>
+        <li>An image is read-only.</li>
+        <li>When we make changes, they happen in a copy of the image.</li>
+        <li>Docker can show the difference between the image, and its copy.</li>
+        <li>For performance, Docker uses copy-on-write systems.
+(i.e. starting a container based on a big image doesn't incur a huge copy.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Commit and run your image</h3>
+      <p>The docker commit command will create a new layer with those changes, and a new image using this new layer.</p>
+      <pre><code class = "python">$ docker commit &lt;yourContainerId&gt;
+&lt;newImageId&gt;</code></pre>
+      <p>The output of the docker commit command will be the ID for your newly created image.</p>
+      <p>We can run this image:</p>
+      <pre><code class = "python">$ docker run -it &lt;newImageId&gt;
+root@fcfb62f0bfde:/# figlet hello
+| |__   ___| | | ___
+| '_ \ / _ \ | |/ _ \
+| | | |  __/ | | (_) |
+|_| |_|\___|_|_|\___/</code></pre>
+    </section>
+
+    <section>
+      <h3>Tagging images</h3>
+      <p>Referring to an image by its ID is not convenient. Let's tag it instead.</p>
+      <p>We can use the tag command:</p>
+      <pre><code class = "python">$ docker tag &lt;newImageId&gt; figlet</code></pre>
+      <p>But we can also specify the tag as an extra argument to commit:</p>
+      <pre><code class = "python">$ docker commit &lt;containerId&gt; figlet</code></pre>
+      <p>And then run it using its tag:</p>
+      <pre><code class = "python">$ docker run -it figlet</code></pre>
+    </section>
+
+    <section>
+      <h3>What's next?</h3>
+      <p>Manual process = bad.</p>
+      <p>Automated process = good.</p>
+      <p>Next we will learn how to automate the build process by writing a Dockerfile.</p>
+    </section>
+
+    <section>
+      <h3>Building Images with a Dockerfile</h3>
+      <ul>
+        <li>A Dockerfile is a build recipe for a Docker image.</li>
+        <li>It contains a series of instructions telling Docker how an image is constructed.</li>
+        <li>The docker build command builds an image from a Dockerfile.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Writing our first Dockerfile</h3>
+      <p>Our Dockerfile must be in a new, empty directory.</p>
+      <ol>
+        <li>Create a directory to hold our Dockerfile.<pre><code class = "python">$ mkdir myimage</code></pre></li>
+        <li>Create a Dockerfile inside this directory.<pre><code class = "python">$ cd myimage
+$ vim Dockerfile</code></pre></li>
+      </ol>
+      <p>Of course, you can use any other editor of your choice.</p>
+    </section>
+
+    <section>
+      <h3>Type this into our Dockerfile</h3>
+      <pre><code class = "python">FROM ubuntu
+RUN apt-get update
+RUN apt-get install figlet</code></pre>
+      <ul>
+        <li>FROM indicates the base image for our build.</li>
+        <li>Each RUN line will be executed by Docker during the build.</li>
+        <li>Our RUN commands must be non-interactive.
+(No input can be provided to Docker during the build.)</li>
+        <li>In many cases, we will add the -y flag to apt-get.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Build it!</h3>
+      <p>Save our file, then execute:</p>
+      <pre><code class = "python">$ docker build -t figlet .</code></pre>
+      <ul>
+        <li>-t indicates the tag to apply to the image.</li>
+        <li>. indicates the location of the build context.
+(We will talk more about the build context later; but to keep things
+simple: this is the directory where our Dockerfile is located.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>What happens when we build the image?</h3>
+      <p>The output of docker build looks like this:</p>
+      <pre><code class = "python">$ docker build -t figlet .
+Sending build context to Docker daemon 2.048 kB
+Sending build context to Docker daemon
+Step 0 : FROM ubuntu
+ ---> e54ca5efa2e9
+Step 1 : RUN apt-get update
+ ---> Running in 840cb3533193
+ ---> 7257c37726a1
+Removing intermediate container 840cb3533193
+Step 2 : RUN apt-get install figlet
+ ---> Running in 2b44df762a2f
+ ---> f9e8f1642759
+Removing intermediate container 2b44df762a2f
+Successfully built f9e8f1642759</code></pre>
+      <ul>
+        <li>The output of the RUN commands has been omitted.</li>
+        <li>Let's explain what this output means.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Sending the build context to Docker</h3>
+      <pre><code class = "python">Sending build context to Docker daemon 2.048 kB</code></pre>
+      <ul>
+        <li>The build context is the . directory given to docker build.</li>
+        <li>It is sent (as an archive) by the Docker client to the Docker daemon.</li>
+        <li>This allows to use a remote machine to build using local files.</li>
+        <li>Be careful (or patient) if that directory is big and your link is slow.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Executing each step</h3>
+      <pre><code class = "python">Step 1 : RUN apt-get update
+ ---> Running in 840cb3533193
+(...output of the RUN command...)
+ ---> 7257c37726a1
+Removing intermediate container 840cb3533193</code></pre>
+      <ul>
+        <li>A container (840cb3533193) is created from the base image.</li>
+        <li>The RUN command is executed in this container.</li>
+        <li>The container is committed into an image (7257c37726a1).</li>
+        <li>The build container (840cb3533193) is removed.</li>
+        <li>The output of this step will be the base image for the next one.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>The caching system</h3>
+      <p>If you run the same build again, it will be instantaneous.</p>
+      <p>Why?</p>
+      <ul>
+        <li>After each build step, Docker takes a snapshot of the resulting image.</li>
+        <li>Before executing a step, Docker checks if it has already built the same sequence.</li>
+        <li>Docker uses the exact strings defined in your Dockerfile, so:
+          <ul>
+            <li>RUN apt-get install figlet cowsay is different from RUN apt-get install cowsay figlet</li>
+            <li>RUN apt-get update is not re-executed when the mirrors are updated</li>
+          </ul></li>
+      </ul>
+      <p>You can force a rebuild with docker build --no-cache</p>
+    </section>
+
+    <section>
+      <h3>Running the image</h3>
+      <p>The resulting image is not different from the one produced manually.</p>
+      <pre><code class = "python">$ docker run -ti figlet
+root@91f3c974c9a1:/# figlet hello
+| |__   ___| | | ___
+| '_ \ / _ \ | |/ _ \
+| | | |  __/ | | (_) |
+|_| |_|\___|_|_|\___/</code></pre>
+      <p>Sweet is the taste of success!</p>
+    </section>
+
+    <section>
+      <h3>Using image and viewing history</h3>
+      <p>The history command lists all the layers composing an image.</p>
+      <p>For each layer, it shows its creation time, size, and creation command.</p>
+      <p>When an image was built with a Dockerfile, each layer corresponds to a line of the Dockerfile.</p>
+      <pre><code class = "python">$ docker history figlet
+IMAGE         CREATED            CREATED BY                     SIZE
+f9e8f1642759  About an hour ago  /bin/sh -c apt-get install fi  1.627 MB
+7257c37726a1  About an hour ago  /bin/sh -c apt-get update      21.58 MB
+07c86167cdc4  4 days ago         /bin/sh -c #(nop) CMD ["/bin   0 B
+&lt;missing&gt;     4 days ago         /bin/sh -c echo '#!/bin/sh'    194.5 kB</code></pre>
+    </section>
+
+    <section>
+      <h3>Introducing JSON Syntax</h3>
+      <p>Most Dockerfile arguments can be passed in two forms:</p>
+      <ul>
+        <li>plain string:
+      RUN apt-get install figlet</li>
+        <li>JSON list:
+      RUN ["apt-get", "install", "figlet"]</li>
+      <p>Let's change our Dockerfile as follows!</p>
+      <pre><code class = "python">FROM ubuntu
+RUN apt-get update
+RUN ["apt-get", "install", "figlet"]</code></pre>
+      <p>Then build the new Dockerfile.</p>
+      <pre><code class = "python">$ docker build -t figlet .</code></pre>
+      </ul>
+    </section>
+
+    <section>
+      <h3>JSON syntax vs string syntax</h3>
+      <p>Compare the new history:</p>
+      <pre><code class = "python">$ docker history figlet</code></pre>
+      <ul>
+        <li>JSON syntax specifies an exact command to execute.</li>
+        <li>String syntax specifies a command to be wrapped within /bin/sh -c "...".</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Develop It!</h3>
+      <p>Spend this time working on <a href="https://github.com/docker/labs/tree/master/beginner">Docker Labs Exercise 2.0: Webapps with Docker</a></p>
+    </section>
+
+    <section>
+
+      <h3>Copying the files during the build</h3>
+      <p>So far, we have installed things in our container images by downloading packages.</p>
+      <p>We can also copy files from the build context to the container that we are building.</p>
+      <p><em>Remember:</em> the build context is the directory containing the Dockerfile.</p>
+      <p>Next, we will learn a new Dockerfile keyword: COPY.</p>
+    </section>
+
+    <section>
+      <h3>Build some C code</h3>
+      <p>We want to build a container that compiles a basic "Hello world" program in C.</p>
+      <p>Here is the program, hello.c:</p>
+      <pre><code class = "python">int main () {
+puts("Hello, world!");
+return 0; }</code></pre>
+      <p>Let's create a new directory, and put this file in there.</p>
+      <p>Then we will write the Dockerfile.</p>
+    </section>
+
+    <section>
+      <h3>The Dockerfile</h3>
+      <p>On Debian and Ubuntu, the package build-essential will get us a compiler.</p>
+      <p>When installing it, don't forget to specify the -y flag, otherwise the build will fail (since the build cannot be interactive).</p>
+      <p>Then we will use COPY to place the source file into the container.</p>
+      <pre><code class = "python">FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y build-essential
+COPY hello.c /
+RUN make hello
+CMD /hello</code></pre>
+      <p>Create this Dockerfile.</p>
+    </section>
+
+    <section>
+      <h3>Testing our C program</h3>
+      <ul>
+        <li>Create hello.c and Dockerfile in the same directory.</li>
+        <li>Run docker build -t hello . in this directory.</li>
+        <li>Run docker run hello, you should see Hello, world!.</li>
+      </ul>
+      <p>Success!</p>
+    </section>
+
+    <section>
+      <h3>COPY and the build cache</h3>
+      <ul>
+        <li>Run the build again.</li>
+        <li>Now, modify hello.c and run the build again.</li>
+        <li>Docker can cache steps involving COPY.</li>
+        <li>Those steps will not be executed again if the files haven't been changed.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Details</h3>
+      <ul>
+        <li>You can COPY whole directories recursively.</li>
+        <li>Older Dockerfiles also have the ADD instruction. It is similar but can automatically extract archives.</li>
+        <li>If we really wanted to compile C code in a compiler, we would:
+            <ul>
+              <li>Place it in a different directory, with the WORKDIR instruction.</li>
+              <li>Even better, use the gcc official image.</li>
+            </ul></li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Advanced Dockerfiles</h3>
+      <h4>Usage Summary</h4>
+      <ul>
+        <li>Dockerfile instructions are executed in order.</li>
+        <li>Each instruction creates a new layer in the image.</li>
+        <li>Instructions are cached. If no changes are detected then the instruction is skipped and the cached layer used.</li>
+        <li>The FROM instruction MUST be the first non-comment instruction.</li>
+        <li>Lines starting with # are treated as comments.</li>
+        <li>You can only have one CMD and one ENTRYPOINT instruction in a Dockerfile.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>The FROM instruction</h3>
+      <ul>
+        <li>Specifies the source image to build this image.</li>
+        <li>Must be the first instruction in the Dockerfile, except for comments.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>The FROM instruction</h3>
+      <p>Can specify a base image:</p>
+      <pre><code class = "python">FROM ubuntu</code></pre>
+      <p>An image tagged with a specific version:</p>
+      <pre><code class = "python">FROM ubuntu:12.04</code></pre>
+      <p>A user image:</p>
+      <pre><code class = "python">FROM training/sinatra</code></pre>
+      <p>Or self-hosted image:</p>
+      <pre><code class = "python">FROM localhost:5000/funtoo</code></pre>
+    </section>
+
+    <section>
+      <h3>More about FROM</h3>
+      <p>The FROM instruction can be specified more than once to build multiple images.</p>
+      <pre><code class = "python">FROM ubuntu:14.04 .. .
+FROM fedora:20 .. .</code></pre>
+      <ul>
+        <li>Each FROM instruction marks the beginning of the build of a new image. The -t command-line parameter will only apply to the last image.</li>
+        <li>If the build fails, existing tags are left unchanged.</li>
+        <li>An optional version tag can be added after the name of the image. E.g.: ubuntu:14.04.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>A use case for multiple FROM lines</h3>
+      <p>Integrate CI and unit tests in the build system</p>
+      <pre><code class = "python">FROM &lt;baseimage&gt;
+RUN &lt;install dependencies&gt;
+COPY &lt;code&gt;
+RUN &lt;build code&gt;
+RUN &lt;install test dependencies&gt;
+COPY &lt;test data sets and fixtures&gt;
+RUN &lt;unit tests&gt;
+FROM &lt;baseimage&gt;
+RUN &lt;install dependencies&gt;
+COPY &lt;vcode&gt;
+RUN vbuild code&gt;
+CMD, EXPOSE ...</code></pre>
+      <ul>
+        <li>The build fails as soon as an instructions fails</li>
+        <li>If RUN <unit tests> fails, the build doesn't produce an image</li>
+        <li>If it succeeds, it produces a clean image (without test libraries and data)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>The MAINTAINER instruction</h3>
+      <p>The MAINTAINER instruction tells you who wrote the Dockerfile.</p>
+      <pre><code class = "python">MAINTAINER Docker Education Team &lt;education@docker.com&gt;</code></pre>
+      <p>It's optional but recommended.</p>
+    </section>
+
+    <section>
+      <h3>The RUN instruction</h3>
+      <p>The RUN instruction can be specified in two ways.</p>
+      <p>With shell wrapping, which runs the specified command inside a shell, with /bin/sh -c:</p>
+      <pre><code class = "python">RUN apt-get update</code></pre>
+      <p>Or using the exec method, which avoids shell string expansion, and allows execution in
+images that don't have /bin/sh:</p>
+      <pre><code class = "python">RUN [ "apt-get", "update" ]</code></pre>
+    </section>
+
+    <section>
+      <h3>More about the RUN instruction</h3>
+      <h4>RUN will do the following:</h4>
+      <ul>
+        <li>Execute a command.</li>
+        <li>Record changes made to the filesystem.</li>
+        <li>Work great to install libraries, packages, and various files.</li>
+      </ul>
+      <h4>RUN will NOT do the following:</h4>
+      <ul>
+        <li>Record state of processes. </li>
+        <li>Automatically start daemons.</li>
+      </ul>
+      <p>If you want to start something automatically when the container runs, you should use CMD and/or ENTRYPOINT.</p>
+    </section>
+
+    <section>
+      <h3>Collapsing layers</h3>
+      <p>It is possible to execute multiple commands in a single step:</p>
+      <pre><code class = "python">RUN apt-get update &amp;&amp; apt-get install -y wget &amp;&amp; apt-get clean</code></pre>
+      <p>It is also possible to break a command onto multiple lines:</p>
+      <p>It is possible to execute multiple commands in a single step:</p>
+      <pre><code class = "python">RUN apt-get update \
+&amp;&amp; apt-get install -y wget \
+&amp;&amp; apt-get clean</code></pre>
+    </section>
+
+    <section>
+      <h3>The EXPOSE instruction</h3>
+      <p>The EXPOSE instruction tells Docker what ports are to be published in this image.</p>
+      <pre><code class = "python">EXPOSE 8080
+EXPOSE 80 443
+EXPOSE 53/tcp 53/udp</code></pre>
+      <ul>
+        <li>All ports are private by default.</li>
+        <li>The Dockerfile doesn't control if a port is publicly available.</li>
+        <li>When you docker run -p <port> ..., that port becomes public. (Even if it was not declared with EXPOSE.)</li>
+        <li>When you docker run -P ... (without port number), all ports declared with EXPOSE become public.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>The EXPOSE instruction</h3>
+      <p>A <em>public port</em> is reachable from other containers and from outside the host. </p>
+      <p>A <em>private port</em> is not reachable from outside.</p>
+    </section>
+
+    <section>
+      <h3>The COPY instruction</h3>
+      <p>The COPY instruction adds files and content from your host into the image.</p>
+      <pre><code class = "python">COPY . /src</code></pre>
+      <p>This will add the contents of the build context (the directory passed
+        as an argument to docker build) to the directory /src in the container.</p>
+      <p>Note: you can only reference files and directories inside the build
+        context. Absolute paths are taken as being anchored to the build context,
+        so the two following lines are equivalent:</p>
+      <pre><code class = "python">COPY . /src
+COPY / /src</code></pre>
+    </section>
+
+    <section>
+      <h3>The COPY instruction</h3>
+      <p>Attempts to use .. to get out of the build context will be detected and blocked with Docker, and the build will fail.</p>
+      <p>Otherwise, a Dockerfile could succeed on host A, but fail on host B.</p>
+    </section>
+
+    <section>
+      <h3>ADD</h3>
+      <p>ADD works almost like COPY, but has a few extra features.</p>
+      <p>ADD can get remote files:</p>
+      <pre><code class = "python">ADD http://www.example.com/webapp.jar /opt/</code></pre>
+      <p>This would download the webapp.jar file and place it in the /opt directory. </p>
+      <p>ADD will automatically unpack zip files and tar archives:</p>
+      <pre><code class = "python">ADD ./assets.zip /var/www/htdocs/assets/</code></pre>
+      <p>This would unpack assets.zip into /var/www/htdocs/assets. However, ADD will not automatically unpack remote archives.</p>
+    </section>
+
+    <section>
+      <h3>ADD, COPY and the build cache</h3>
+      <ul>
+        <li>For most Dockerfiles instructions, Docker only checks if the line in the Dockerfile
+has changed.</li>
+        <li>For ADD and COPY, Docker also checks if the files to be added to the container have been changed.</li>
+        <li>ADD always need to download the remote file before it can check if it has been changed. (It cannot use, e.g., ETags or If-Modified-Since headers.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>More Advanced Dockerfile Instructions</h3>
+      <ul>
+        <li>VOLUME: tells Docker that a specific directory should be a volume.
+</li>
+        <li>WORKDIR: sets the working directory for subsequent instructions.</li>
+        <li>ENV: specifies environment variables that should be set in any container
+launched from the image.</li>
+        <li>USER: sets the user name or UID to use when running the image.</li>
+        <li>CMD: a default command run when a container is launched from the
+image.</li>
+        <li>ENTRYPOINT: like the CMD instruction, but arguments given on the
+command line are appended to the entry point.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>More Advanced Dockerfile Instructions</h3>
+      <ul>
+        <li>ONBUILD: lets you stash instructions that will be executed when this image is used as a base for another one.</li>
+        <li>LABEL: adds arbitrary metadata to the image.</li>
+        <li>ARG: defines build-time variables (optional or mandatory).</li>
+        <li>STOPSIGNAL: sets the signal for docker stop (TERM by default).</li>
+        <li>HEALTHCHECK: defines a command assessing the status of the container.</li>
+        <li>SHELL: sets the default program to use for string-syntax RUN, CMD, etc.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Naming and Inspecting Containers</h3>
+      <p>So far, we have referenced containers with their ID.</p>
+      <p>We have copy-pasted the ID, or used a shortened prefix.</p>
+      <p>But each container can also be referenced by its name.</p>
+      <p>If a container is named prod-db, I can do:</p>
+      <pre><code class = "python">$ docker logs prod-db
+$ docker stop prod-db
+etc.</code></pre>
+    </section>
+
+    <section>
+      <h3>Default names</h3>
+      <p>When we create a container, if we don't give a specific name, Docker will pick one for us.</p>
+      <p>It will be the concatenation of:</p>
+      <ul>
+        <li>A mood (furious, goofy, suspicious, boring...)</li>
+        <li>The name of a famous inventor (tesla, darwin, wozniak...)</li>
+      </ul><br><br>
+      <p>Examples: happy_curie, clever_hopper, jovial_lovelace</p>
+    </section>
+
+    <section>
+      <h3>Specifying a name</h3>
+      <p>You can set the name of the container when you create it.</p>
+      <pre><code class = "python">$ docker run --name ticktock jpetazzo/clock</code></pre>
+      <p>If you specify a name that already exists, Docker will refuse to create the container.</p>
+      <p>This lets us enforce unicity of a given resource.</p>
+    </section>
+
+    <section>
+      <h3>Renaming containers</h3>
+      <ul>
+        <li>You can rename containers with docker rename.</li>
+        <li>This allows you to "free up" a name without destroying the associated container.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Inspecting a container</h3>
+      <pre><code class = "python">$ docker inspect &lt;containerID&gt;
+[{
+"AppArmorProfile": "",
+"Args": [],
+"Config": {
+    "AttachStderr": true,
+    "AttachStdin": false,
+    "AttachStdout": true,
+    "Cmd": [
+    "bash"
+    ],
+    "CpuShares": 0,
+...</code></pre>
+      <p>There are multiple ways to consume that information.</p>
+    </section>
+
+    <section>
+      <h3>Parsing JSON with the Shell</h3>
+      <ul>
+        <li>You could grep and cut or awk the output of docker inspect.</li>
+        <li>Please, don't.</li>
+        <li>It's painful.</li>
+        <li>If you really must parse JSON from the Shell, use JQ!
+(It's great.)</li>
+      </ul>
+      <pre><code class = "python">$ docker inspect &lt;containerID&gt; | jq .</code></pre>
+      <p>We will see a better solution which doesn't require extra tools.</p>
+    </section>
+
+    <section>
+      <h3>Using --format</h3>
+      <p>You can specify a format string, which will be parsed by Go's text/template package.
+</p>
+      <pre><code class = "python">$ docker inspect --format '{{ json .Created }}' <containerID>
+"2015-02-24T07:21:11.712240394Z"</code></pre>
+      <ul>
+        <li>The generic syntax is to wrap the expression with double curly braces.</li>
+        <li>The expression starts with a dot representing the JSON object.</li>
+        <li>Then each field or member can be accessed in dotted notation syntax.</li>
+        <li>The optional json keyword asks for valid JSON output. (e.g. here it adds the surrounding double-quotes.)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Resources</h3>
+      <ul>
+        <li><a href="https://github.com/docker/labs/tree/master/networking">Networking with Docker Containers</a> Tutorial</li>
+        <li><a href="http://www.docker.com/">Docker homepage</a></li>
+        <li><a href="https://hub.docker.com">Docker Hub</a></li>
+        <li><a href="ttp://blog.docker.com/">Docker blog</a></li>
+        <li><a href="ttp://docs.docker.com/">Docker documentation</a></li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Resources</h3>
+      <ul>
+        <li><a href="http://www.docker.com/gettingstarted/">Docker Getting Started Guide</a></li>
+        <li><a href="https://github.com/docker/docker">Docker code on GitHub</a></li>
+        <li><a href="https://groups.google.com/forum/#!forum/docker-user">Docker mailing list</a></li>
+        <li>Docker on IRC: irc.freenode.net and channels #docker and #docker-dev</li>
+        <li>Docker on <a href="http://twitter.com/docker">Twitter</a></li>
+        <li>Get Docker help on <a href="http://stackoverflow.com/ ">Stack Overflow</a> search?q=docker</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Questions?</h2>
+    </section>
+</div><!-- Close slides -->
+
+    <div>
+      <footer>
+        <div class="copyright">
+          HTML/CSS ~ Girl Develop It
+          <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/deed.en_US"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc/3.0/80x15.png" /></a>
+        </div>
+      </footer>
+    </div>
+</div><!-- Closes Reveal -->
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/accessibility-helper/js/accessibility-helper.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
